@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+    <title>View Expenses - Expense Tracker</title>
+  </head>
+  <body>
+    <nav class="navbar">
+      <input type="checkbox" id="nav-check">
+      <div class="dashboard">
+        <a href="index.html" class="brand">Expense Tracker</a>
+        <div class="nav-btn">
+          <label for="nav-check">
+            <span></span>
+            <span></span>
+            <span></span>
+          </label>
+        </div>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="add_expense.html">Add Expense</a></li>
+          <li><a href="view_expense.html">View Expenses</a></li>
+          <li><a href="edit_expense.html">Edit Expenses</a></li>
+          <li><a href="index.html">Logout</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="welcome">
+        <h1>Your Expenses</h1>
+      </div>
+      
+      <table class="expense-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="expenses-table">
+          <!-- Dynamic content will be injected here -->
+        </tbody>
+      </table>
+    </div>
+    <script src="javascript/view.js"></script>
+  </body>
+</html>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <title>Edit Expense - Expense Tracker</title>
+  </head>
+  <body>
+    <nav class="navbar">
+      <input type="checkbox" id="nav-check">
+      <div class="dashboard">
+        <a href="index.html" class="brand">Expense Tracker</a>
+        <div class="nav-btn">
+          <label for="nav-check">
+            <span></span>
+            <span></span>
+            <span></span>
+          </label>
+        </div>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="add_expense.html">Add Expense</a></li>
+          <li><a href="view_expense.html">View Expenses</a></li>
+          <li><a href="edit_expense.html">Edit Expenses</a></li>
+          <li><a href="index.html">Logout</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="welcome">
+        <h1>Edit Expense</h1>
+      </div>
+      
+      <form class="expense-form">
+        <input type="hidden" id="expense-id" name="expense-id"> <!-- Replace with actual expense ID -->
+        <div class="form-group">
+          <label for="expense-description">Description:</label>
+          <input type="text" id="expense-description" name="description" required>
+        </div>
+        <div class="form-group">
+          <label for="expense-amount">Amount:</label>
+          <input type="number" id="expense-amount" name="amount" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="expense-date">Date:</label>
+          <input type="date" id="expense-date" name="date" required>
+        </div>
+        <div class="form-group">
+          <label for="expense-category">Category:</label>
+          <select id="expense-category" name="category" required>
+            <option value="">Select a category</option>
+            <option value="food">Food</option>
+            <option value="transportation">Transportation</option>
+            <option value="utilities">Utilities</option>
+            <option value="entertainment">Entertainment</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="button-group">
+          <button type="submit" class="get-started-button update-button">Update Expense</button>
+          <button type="button" class="delete-button">Delete Expense</button>
+        </div>
+      </form>
+    </div>
+    <script src="javascript/edit.js"></script>
+  </body>
+</html>

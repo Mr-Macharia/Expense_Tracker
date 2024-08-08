@@ -1,0 +1,99 @@
+name: HTML & CSS Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Check if specific files exist
+        run: |
+         # Search repo for necessary files
+         if [ -f "index.html" ]; then
+           echo "Files exist."
+         else
+           echo "Error: Files not found."
+           exit 1
+         fi
+
+      - name: Check HTML structure
+        run: |
+          # Search repo for necessary files
+          if [ -f "index.html" ] && [ -f "styles.css" ] && [ -f "login.html" ] && [ -f "register.css" ] && [ -f "add_expense.html" ] && [ -f "edit_expense.html" ] && [ -f "view_expense.html" ]; then
+            echo "Files exist."
+          else
+            echo "Error: Files not found."
+            exit 1
+          fi
+          
+          if grep -q "<html>" $(git ls-files '*.html'); then
+            echo "HTML tag <html> found in the repository."
+          else
+            echo "Error: HTML tag <html> not found in any HTML file."
+            exit 1
+          fi
+
+          if grep -q "<head>" $(git ls-files '*.html'); then
+            echo "HTML tag <head> found in the repository."
+          else
+            echo "Error: HTML tag <head> not found in any HTML file."
+            exit 1
+          fi
+          
+          if grep -q "<title>" $(git ls-files '*.html'); then
+            echo "HTML tag <title> found in the repository."
+          else
+            echo "Error: HTML tag <title> not found in any HTML file."
+            exit 1
+          fi
+          
+          if grep -q "<p>" $(git ls-files '*.html'); then
+            echo "HTML tag <p> found in the repository."
+          else
+            echo "Error: HTML tag <p> not found in any HTML file."
+            exit 1
+          fi
+          
+          if grep -q "<a href" $(git ls-files '*.html'); then
+            echo "HTML tag <a> found in the repository."
+          else
+            echo "Error: HTML tag <a> not found in any HTML file."
+            exit 1
+          fi
+          
+          if grep -q "<img " $(git ls-files '*.html'); then
+            echo "HTML tag <img> found in the repository."
+          else
+            echo "Error: HTML tag <img> not found in any HTML file."
+            exit 1
+          fi
+          
+          if grep -q "<form>" $(git ls-files '*.html'); then
+            echo "HTML tag <form> found in the repository."
+          else
+            echo "Error: HTML tag <form> not found in any HTML file."
+            exit 1
+          fi
+
+          if grep -q "<table>" $(git ls-files '*.html'); then
+            echo "HTML tag <table> found in the repository."
+          else
+            echo "Error: HTML tag <table> not found in any HTML file."
+            exit 1
+          fi
+          
+          echo "HTML test passed"
+
+      - name: Display results
+        run: |
+          echo "HTML tests completed successfully"
