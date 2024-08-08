@@ -536,4 +536,77 @@ footer {
     overflow-x: auto;
     margin: 20px 0;
   }
-  
+.button-group {
+    display: flex;
+    gap: 10px; /* Adjusts the spacing between buttons */
+    align-items: center; /* Vertically centers the buttons */
+}
+/* General Button Styles */
+button {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.edit-button {
+    background-color: #007bff;
+    color: white;
+}
+
+.delete-button {
+    background-color: #dc3545;
+    color: white;
+}
+
+.edit-button,
+.delete-button {
+    padding: 5px 10px;
+    border: none;
+    background-color: #007bff; /* Edit button color */
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.delete-button {
+    background-color: #dc3545; /* Delete button color */
+}
+
+.edit-button:hover,
+.delete-button:hover {
+    opacity: 0.8;
+}
+
+/* Additional styling for table */
+.expense-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.expense-table th, .expense-table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.expense-table th {
+    background-color: #f2f2f2;
+}
+
+.expense-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.expense-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.expense-table td {
+    vertical-align: middle; /* Vertically center the content within the table cells */
+    white-space: nowrap; /* Prevent the buttons from wrapping onto a new line */
+} 

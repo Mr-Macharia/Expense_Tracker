@@ -2,22 +2,20 @@ document.querySelector('.expense-form').addEventListener('submit', async functio
     e.preventDefault();
 
     const expenseId = document.getElementById('expense-id').value;
-    const expenseName = document.getElementById('expense-name').value;
+    const expenseDescription = document.getElementById('expense-description').value;
     const expenseAmount = document.getElementById('expense-amount').value;
     const expenseDate = document.getElementById('expense-date').value;
     const expenseCategory = document.getElementById('expense-category').value;
-    const expenseNotes = document.getElementById('expense-notes').value;
 
     const expenseData = {
-        name: expenseName,
+        description: expenseDescription,
         amount: parseFloat(expenseAmount),
         date: expenseDate,
         category: expenseCategory,
-        notes: expenseNotes,
     };
 
     try {
-        const response = await fetch(`/api/expenses/${expenseId}`, { // Adjust the endpoint as per your API
+        const response = await fetch(`/api/expenses/${expenseId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -36,6 +34,7 @@ document.querySelector('.expense-form').addEventListener('submit', async functio
         alert('An error occurred. Please try again.');
     }
 });
+
 
 document.querySelector('.delete-button').addEventListener('click', async function () {
     const expenseId = document.getElementById('expense-id').value;
@@ -60,3 +59,24 @@ document.querySelector('.delete-button').addEventListener('click', async functio
         }
     }
 });
+
+document.addEventListener('DOMContentLoaded', async function () {
+    const params = new URLSearchParams(window.location.search);
+    const expenseId = params.get('id');
+
+    if (expenseId) {
+        try {
+            const response = await fetch(`/api/expenses/${expenseId}`);
+            const expense = await response.json();
+
+            document.getElementById('expense-id').value = expense.id;
+            document.getElementById('expense-description').value = expense.description;
+            document.getElementById('expense-amount').value = expense.amount;
+            document.getElementById('expense-date').value = expense.date;
+            document.getElementById('expense-category').value = expense.category;
+        } catch (error) {
+            console.error('Error fetching expense:', error);
+        }
+    }
+});
+

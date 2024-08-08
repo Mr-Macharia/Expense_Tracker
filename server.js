@@ -50,6 +50,23 @@ app.get('/api/expenses', (req, res) => {
     });
 });
 
+
+// Get a single expense by ID
+app.get('/api/expenses/:id', (req, res) => {
+    const { id } = req.params;
+    const sql = 'SELECT * FROM expenses WHERE id = ?';
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            return res.status(500).send('Error retrieving expense');
+        }
+        if (result.length === 0) {
+            return res.status(404).send('Expense not found');
+        }
+        res.json(result[0]);
+    });
+});
+
+
 // Add Expense
 app.post('/api/expenses', (req, res) => {
     const { category, description, amount, date } = req.body;
@@ -68,16 +85,20 @@ app.post('/api/expenses', (req, res) => {
 // Edit Expense
 app.put('/api/expenses/:id', (req, res) => {
     const { id } = req.params;
-    const { category, description, amount, date } = req.body;
+    const { description, amount, date, category } = req.body;
 
-    const sql = 'UPDATE expenses SET name = ?, amount = ?, date = ?, category = ?, notes = ? WHERE id = ?';
-    db.query(sql, [name, amount, date, category, notes, id], (err, result) => {
+    const sql = 'UPDATE expenses SET description = ?, amount = ?, date = ?, category = ? WHERE id = ?';
+    db.query(sql, [description, amount, date, category, id], (err, result) => {
         if (err) {
             return res.status(500).send('Error updating expense');
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).send('Expense not found');
         }
         res.send('Expense updated');
     });
 });
+
 
 // Delete Expense
 app.delete('/api/expenses/:id', (req, res) => {
