@@ -1,136 +1,127 @@
 const express = require('express');
-const mysql = require('mysql');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 const app = express();
 app.use(express.json());
 
-// MySQL Database Connection
-const db = mysql.createConnection(process.env.MYSQL_URL);
-
-
-db.connect((err) => {
-    if (err) {
-        throw err;
-    }
-    console.log('MySQL Connected...');
-});
+// Initialize Supabase Client
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
 // Register User
 app.post('/api/register', async (req, res) => {
     const { username, email, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = { username, email, password: hashedPassword };
-    
-    const sql = 'INSERT INTO users SET ?';
-    db.query(sql, user, (err, result) => {
-        if (err) {
-            return res.status(500).send('Error registering user');
-        }
-        res.status(201).send('User registered');
-    });
+    const { data, error } = await supabase
+        .from('users')
+        .insert([{ username, email, password: hashedPassword }]);
+
+    if (error) {
+        return res.status(500).send('Error registering user');
+    }
+    res.status(201).send('User registered');
 });
 
 // Get All Expenses
-app.get('/api/expenses', (req, res) => {
-    const sql = 'SELECT * FROM expenses';
-    db.query(sql, (err, results) => {
-        if (err) {
-            return res.status(500).send('Error retrieving expenses');
-        }
-        res.json(results);
-    });
+app.get('/api/expenses', async (req, res) => {
+    const { data, error } = await supabase.from('expenses').select('*');
+
+    if (error) {
+        return res.status(500).send('Error retrieving expenses');
+    }
+    res.json(data);
 });
 
-
-// Get a single expense by ID
-app.get('/api/expenses/:id', (req, res) => {
+// Get a Single Expense by ID
+app.get('/api/expenses/:id', async (req, res) => {
     const { id } = req.params;
-    const sql = 'SELECT * FROM expenses WHERE id = ?';
-    db.query(sql, [id], (err, result) => {
-        if (err) {
-            return res.status(500).send('Error retrieving expense');
-        }
-        if (result.length === 0) {
-            return res.status(404).send('Expense not found');
-        }
-        res.json(result[0]);
-    });
-});
 
+    const { data, error } = await supabase
+        .from('expenses')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (error) {
+        return res.status(500).send('Error retrieving expense');
+    }
+    if (!data) {
+        return res.status(404).send('Expense not found');
+    }
+    res.json(data);
+});
 
 // Add Expense
-app.post('/api/expenses', (req, res) => {
+app.post('/api/expenses', async (req, res) => {
     const { category, description, amount, date } = req.body;
-    const expense = { category, description, amount, date };
 
-    const sql = 'INSERT INTO expenses SET ?';
-    db.query(sql, expense, (err, result) => {
-        if (err) {
-            return res.status(500).send('Error adding expense');
-        }
-        res.status(201).send('Expense added');
-    });
+    const { data, error } = await supabase
+        .from('expenses')
+        .insert([{ category, description, amount, date }]);
+
+    if (error) {
+        return res.status(500).send('Error adding expense');
+    }
+    res.status(201).send('Expense added');
 });
-
 
 // Edit Expense
-app.put('/api/expenses/:id', (req, res) => {
+app.put('/api/expenses/:id', async (req, res) => {
     const { id } = req.params;
-    const { description, amount, date, category } = req.body;
+    const { category, description, amount, date } = req.body;
 
-    const sql = 'UPDATE expenses SET description = ?, amount = ?, date = ?, category = ? WHERE id = ?';
-    db.query(sql, [description, amount, date, category, id], (err, result) => {
-        if (err) {
-            return res.status(500).send('Error updating expense');
-        }
-        if (result.affectedRows === 0) {
-            return res.status(404).send('Expense not found');
-        }
-        res.send('Expense updated');
-    });
+    const { data, error } = await supabase
+        .from('expenses')
+        .update({ category, description, amount, date })
+        .eq('id', id);
+
+    if (error) {
+        return res.status(500).send('Error updating expense');
+    }
+    if (!data.length) {
+        return res.status(404).send('Expense not found');
+    }
+    res.send('Expense updated');
 });
 
-
 // Delete Expense
-app.delete('/api/expenses/:id', (req, res) => {
+app.delete('/api/expenses/:id', async (req, res) => {
     const { id } = req.params;
 
-    const sql = 'DELETE FROM expenses WHERE id = ?';
-    db.query(sql, [id], (err, result) => {
-        if (err) {
-            return res.status(500).json({ error: 'Error deleting expense' });
-        }
-        
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'Expense not found' });
-        }
-        
-        res.json({ message: 'Expense deleted' });
-    });
+    const { data, error } = await supabase
+        .from('expenses')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
+        return res.status(500).send('Error deleting expense');
+    }
+    if (!data.length) {
+        return res.status(404).send('Expense not found');
+    }
+    res.send('Expense deleted');
 });
 
 // Login User
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
 
-    const sql = 'SELECT * FROM users WHERE email = ?';
-    db.query(sql, [email], async (err, results) => {
-        if (err) {
-            return res.status(500).send('Error logging in');
-        }
+    const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email)
+        .single();
 
-        if (results.length === 0 || !(await bcrypt.compare(password, results[0].password))) {
-            return res.status(401).send('Incorrect email or password');
-        }
+    if (error || !data || !(await bcrypt.compare(password, data.password))) {
+        return res.status(401).send('Incorrect email or password');
+    }
 
-        const token = jwt.sign({ id: results[0].id }, 'secretkey', { expiresIn: '1h' });
-        res.json({ token });
-    });
+    const token = jwt.sign({ id: data.id }, 'secretkey', { expiresIn: '1h' });
+    res.json({ token });
 });
 
 // Serve static files from the "public" directory
