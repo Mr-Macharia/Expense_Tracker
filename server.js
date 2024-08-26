@@ -1,127 +1,140 @@
 const express = require('express');
+const mysql = require('mysql');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
-const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 const app = express();
 app.use(express.json());
 
-// Initialize Supabase Client
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+// MySQL Database Connection
+const db = mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB,
+});
+
+db.connect((err) => {
+    if (err) {
+        throw err;
+    }
+    console.log('MySQL Connected...');
+});
 
 // Register User
 app.post('/api/register', async (req, res) => {
     const { username, email, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const { data, error } = await supabase
-        .from('users')
-        .insert([{ username, email, password: hashedPassword }]);
-
-    if (error) {
-        return res.status(500).send('Error registering user');
-    }
-    res.status(201).send('User registered');
+    const user = { username, email, password: hashedPassword };
+    
+    const sql = 'INSERT INTO users SET ?';
+    db.query(sql, user, (err, result) => {
+        if (err) {
+            return res.status(500).send('Error registering user');
+        }
+        res.status(201).send('User registered');
+    });
 });
 
 // Get All Expenses
-app.get('/api/expenses', async (req, res) => {
-    const { data, error } = await supabase.from('expenses').select('*');
-
-    if (error) {
-        return res.status(500).send('Error retrieving expenses');
-    }
-    res.json(data);
+app.get('/api/expenses', (req, res) => {
+    const sql = 'SELECT * FROM expenses';
+    db.query(sql, (err, results) => {
+        if (err) {
+            return res.status(500).send('Error retrieving expenses');
+        }
+        res.json(results);
+    });
 });
 
-// Get a Single Expense by ID
-app.get('/api/expenses/:id', async (req, res) => {
+
+// Get a single expense by ID
+app.get('/api/expenses/:id', (req, res) => {
     const { id } = req.params;
-
-    const { data, error } = await supabase
-        .from('expenses')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-    if (error) {
-        return res.status(500).send('Error retrieving expense');
-    }
-    if (!data) {
-        return res.status(404).send('Expense not found');
-    }
-    res.json(data);
+    const sql = 'SELECT * FROM expenses WHERE id = ?';
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            return res.status(500).send('Error retrieving expense');
+        }
+        if (result.length === 0) {
+            return res.status(404).send('Expense not found');
+        }
+        res.json(result[0]);
+    });
 });
+
 
 // Add Expense
-app.post('/api/expenses', async (req, res) => {
+app.post('/api/expenses', (req, res) => {
     const { category, description, amount, date } = req.body;
+    const expense = { category, description, amount, date };
 
-    const { data, error } = await supabase
-        .from('expenses')
-        .insert([{ category, description, amount, date }]);
-
-    if (error) {
-        return res.status(500).send('Error adding expense');
-    }
-    res.status(201).send('Expense added');
+    const sql = 'INSERT INTO expenses SET ?';
+    db.query(sql, expense, (err, result) => {
+        if (err) {
+            return res.status(500).send('Error adding expense');
+        }
+        res.status(201).send('Expense added');
+    });
 });
+
 
 // Edit Expense
-app.put('/api/expenses/:id', async (req, res) => {
+app.put('/api/expenses/:id', (req, res) => {
     const { id } = req.params;
-    const { category, description, amount, date } = req.body;
+    const { description, amount, date, category } = req.body;
 
-    const { data, error } = await supabase
-        .from('expenses')
-        .update({ category, description, amount, date })
-        .eq('id', id);
-
-    if (error) {
-        return res.status(500).send('Error updating expense');
-    }
-    if (!data.length) {
-        return res.status(404).send('Expense not found');
-    }
-    res.send('Expense updated');
+    const sql = 'UPDATE expenses SET description = ?, amount = ?, date = ?, category = ? WHERE id = ?';
+    db.query(sql, [description, amount, date, category, id], (err, result) => {
+        if (err) {
+            return res.status(500).send('Error updating expense');
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).send('Expense not found');
+        }
+        res.send('Expense updated');
+    });
 });
 
+
 // Delete Expense
-app.delete('/api/expenses/:id', async (req, res) => {
+app.delete('/api/expenses/:id', (req, res) => {
     const { id } = req.params;
 
-    const { data, error } = await supabase
-        .from('expenses')
-        .delete()
-        .eq('id', id);
-
-    if (error) {
-        return res.status(500).send('Error deleting expense');
-    }
-    if (!data.length) {
-        return res.status(404).send('Expense not found');
-    }
-    res.send('Expense deleted');
+    const sql = 'DELETE FROM expenses WHERE id = ?';
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error deleting expense' });
+        }
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Expense not found' });
+        }
+        
+        res.json({ message: 'Expense deleted' });
+    });
 });
 
 // Login User
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
 
-    const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', email)
-        .single();
+    const sql = 'SELECT * FROM users WHERE email = ?';
+    db.query(sql, [email], async (err, results) => {
+        if (err) {
+            return res.status(500).send('Error logging in');
+        }
 
-    if (error || !data || !(await bcrypt.compare(password, data.password))) {
-        return res.status(401).send('Incorrect email or password');
-    }
+        if (results.length === 0 || !(await bcrypt.compare(password, results[0].password))) {
+            return res.status(401).send('Incorrect email or password');
+        }
 
-    const token = jwt.sign({ id: data.id }, 'secretkey', { expiresIn: '1h' });
-    res.json({ token });
+        const token = jwt.sign({ id: results[0].id }, 'secretkey', { expiresIn: '1h' });
+        res.json({ token });
+    });
 });
 
 // Serve static files from the "public" directory
