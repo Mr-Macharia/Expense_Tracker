@@ -26,7 +26,7 @@ To get the Expense Tracker up and running on your local machine, follow these st
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/expense-tracker.git
+git clone https://github.com/Mr-Macharia/expense-tracker.git
 cd expense-tracker
 ```
 
